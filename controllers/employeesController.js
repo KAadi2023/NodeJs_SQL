@@ -21,10 +21,11 @@ const addEmployees = (req, res) => {
     position,
     salary,
     department,
+    status
   } = req.body;
 
   // Check if any details are provided
-  if (!(name || email || address || startDate || position || department)) {
+  if (!(name || email || address || startDate || position || department || status)) {
     return res.status(400).json({ error: "No details provided for insertion" });
   }
 
@@ -64,6 +65,10 @@ const addEmployees = (req, res) => {
     conditions.push("department = ?");
     values.push(department);
   }
+  if (status) {
+    conditions.push("status =?");
+    values.push(status);
+  }
 
   // Construct the final query
   const query = `INSERT INTO employees SET ${conditions.join(", ")}`;
@@ -81,8 +86,8 @@ const addEmployees = (req, res) => {
 
 
 const updateEmployees = (req, res) => {
+  const ids = req.params.ids.split(',');
   const {
-    id,
     name,
     email,
     address,
@@ -91,10 +96,10 @@ const updateEmployees = (req, res) => {
     position,
     salary,
     department,
+    status
   } = req.body;
 
-  // Check if any details are provided
-  if (!id || !(name || email || address || startDate || endDate || position || salary || department)) {
+  if(!ids || ids.length === 0){
     return res.status(400).json({ error: "Invalid request. Provide employee ID and at least one detail for update." });
   }
 
@@ -134,12 +139,17 @@ const updateEmployees = (req, res) => {
     conditions.push("department = ?");
     values.push(department);
   }
+  if (status) {
+    conditions.push("status =?");
+    values.push(status);
+  }
 
   // Construct the final query
-  const query = `UPDATE employees SET ${conditions.join(", ")} WHERE id = ?`;
+  const idConditions = ids.map(() => "id = ?").join(" OR ");
+  const query = `UPDATE employees SET ${conditions.join(", ")} WHERE ${idConditions}`;
 
   // Add the employee ID to the values array
-  values.push(id);
+  values.push(...ids);
 
   db.query(query, values, (err, result) => {
     if (err) {
@@ -156,17 +166,22 @@ const updateEmployees = (req, res) => {
 const deleteEmployees = (req, res) => {
   const userIdsToDelete = req.params.id.split(",");
 
+  let successfulDeletions = 0;
+  let totalDeletions = userIdsToDelete.length;
+
   userIdsToDelete.forEach((userId) => {
     db.query("DELETE FROM employees WHERE id =?", [userId], (err, result) => {
       if (err) {
         console.error("Error deleting user:", err);
-        res.status(500).json({ error: "Error deleting employees" });
       } else if (result.affectedRows === 0) {
-        res.status(404).json({ error: "User not found" });
+        // res.status(404).json({ error: "User not found" });
       } else {
-        res.json({
-          message: `${result.affectedRows} employees deleted successfully`,
-        });
+        successfulDeletions++;
+        if (successfulDeletions === totalDeletions) {
+          res.json({
+            message: `${successfulDeletions} employees deleted successfully`,
+          });
+        }
       }
     });
   });

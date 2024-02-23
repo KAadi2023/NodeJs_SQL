@@ -8,6 +8,10 @@ const port = 5000;
 // Middleware
 app.use(jsonParser);
 
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+})
+
 // Use user routes
 app.use("/employees", employeesRoutes);
 

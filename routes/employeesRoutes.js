@@ -13,7 +13,7 @@ router.get("/getEmployees", employeesController.getEmployees);
 router.post("/addEmployees", jsonParser, employeesController.addEmployees);
 
 // Update Employees
-router.put("/updateEmployees/:id", jsonParser, employeesController.updateEmployees);
+router.put("/updateEmployees/:ids", jsonParser, employeesController.updateEmployees);
 
 // Delete Employees
 router.delete("/deleteEmployees/:id", employeesController.deleteEmployees);
