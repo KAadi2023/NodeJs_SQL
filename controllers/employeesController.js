@@ -198,10 +198,11 @@ const searchEmployees = (req, res) => {
     position,
     salary,
     department,
+    status
   } = req.body;
 
   // Check if any search criteria are provided
-  if (!(id || name || email || address || startDate || endDate || position || salary || department)) {
+  if (!(id || name || email || address || startDate || endDate || position || salary || department || status)) {
     return res.status(400).json({ error: "No search criteria provided" });
   }
 
@@ -244,6 +245,10 @@ const searchEmployees = (req, res) => {
   if (department) {
     conditions.push("department = ?");
     values.push(department);
+  }
+  if (status) {
+    conditions.push("status =?");
+    values.push(status);
   }
 
   // Construct the final query
